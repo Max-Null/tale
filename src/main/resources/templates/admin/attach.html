@@ -110,6 +110,10 @@
     $("#dropzone").dropzone({
         url: "/admin/attach/upload",
         filesizeBase:1024,//定义字节算法 默认1000
+        addRemoveLinks: true,
+        dictCancelUpload:'取消上传',
+        dictCancelUploadConfirmation:'确认取消？',
+        dictRemoveFile:'删除文件',
         maxFiles: $.constant().MAX_FILES,//最大文件数量
         maxFilesize: $.constant().MAX_FILE_SIZE ,//MB
 //        acceptedFiles: ".js,.obj,.dae" //限制文件类型  image/*,application/pdf,.psd,.obj
@@ -120,10 +124,15 @@
         dictInvalidInputType:'不支持您上传的类型',
         dictMaxFilesExceeded:'您的文件超过'+ $.constant().MAX_FILES+'个!',
         init: function() {
-            this.on("addedfile", function(file) {
-                tale.alertError('暂不支持您的浏览器长传!');
+            this.on("success", function(file) {
+                tale.alertOk('上传成功');
+                //this.removeFile(file);
+                //console.log("File " + file.name + "uploaded");
             });
-        }
+            this.on("queuecomplete", function(file) {
+                tale.alertOkAndReload('上传完成');
+            });
+        },
     });
 
 
