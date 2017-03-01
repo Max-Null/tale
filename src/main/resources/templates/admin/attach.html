@@ -111,6 +111,7 @@
         url: "/admin/attach/upload",
         filesizeBase:1024,//定义字节算法 默认1000
         addRemoveLinks: true,
+        uploadMultiple: true,
         dictCancelUpload:'取消上传',
         dictCancelUploadConfirmation:'确认取消？',
         dictRemoveFile:'删除文件',
@@ -129,7 +130,7 @@
                 //this.removeFile(file);
                 //console.log("File " + file.name + "uploaded");
             });
-            this.on("queuecomplete", function(file) {
+            this.on("queuecomplete", function(list) {
                 tale.alertOkAndReload('上传完成');
             });
         },
