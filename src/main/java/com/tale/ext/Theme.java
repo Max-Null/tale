@@ -1,6 +1,8 @@
 package com.tale.ext;
 
+import com.blade.jdbc.model.Paginator;
 import com.blade.kit.StringKit;
+import com.tale.dto.Comment;
 import com.tale.dto.MetaDto;
 import com.tale.dto.Types;
 import com.tale.init.TaleConst;
@@ -14,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * 主题函数
@@ -27,10 +28,59 @@ public final class Theme {
 
     public static final List EMPTY = new ArrayList(0);
 
-    private static final Random rand = new Random();
-
     public static void setSiteService(SiteService ss) {
         siteService = ss;
+    }
+
+    /**
+     * 获取header keywords
+     * @return
+     */
+    public static String meta_keywords(){
+        InterpretContext ctx = InterpretContext.current();
+        Object value = ctx.getValueStack().getValue("keywords");
+        if(null != value){
+            return value.toString();
+        }
+        return Commons.site_option("site_keywords");
+    }
+
+    /**
+     * 获取header description
+     * @return
+     */
+    public static String meta_description(){
+        InterpretContext ctx = InterpretContext.current();
+        Object value = ctx.getValueStack().getValue("description");
+        if(null != value){
+            return value.toString();
+        }
+        return Commons.site_option("site_description");
+    }
+
+    /**
+     * header title
+     * @return
+     */
+    public static String head_title(){
+        InterpretContext ctx = InterpretContext.current();
+        Object value = ctx.getValueStack().getValue("title");
+
+        String p = "首页";
+        if(null != value){
+            p = value.toString();
+        }
+        return p + " - " + Commons.site_option("site_title", "Tale 博客");
+    }
+
+    /**
+     * 返回主题所在的url
+     *
+     * @param sub
+     * @return
+     */
+    public static String theme_url(String sub){
+        return Commons.site_url("/templates/themes/" + Commons.site_option("site_theme") + sub);
     }
 
     /**
@@ -93,16 +143,6 @@ public final class Theme {
     }
 
     /**
-     * 返回文章评论数
-     *
-     * @return
-     */
-    public static Integer comments_num() {
-        Contents contents = current_article();
-        return null != contents ? contents.getComments_num() : 0;
-    }
-
-    /**
      * 返回文章浏览数
      *
      * @return
@@ -146,19 +186,29 @@ public final class Theme {
     /**
      * 显示标签
      *
-     * @param tags
+     * @param split 每个标签之间的分隔符
      * @return
      */
-    public static String show_tags(String tags) throws UnsupportedEncodingException {
-        if (StringKit.isNotBlank(tags)) {
-            String[] arr = tags.split(",");
+    public static String show_tags(String split) throws UnsupportedEncodingException {
+        Contents contents = current_article();
+        if (StringKit.isNotBlank(contents.getTags())) {
+            String[] arr = contents.getTags().split(",");
             StringBuffer sbuf = new StringBuffer();
             for (String c : arr) {
-                sbuf.append("<a href=\"/tag/" + URLEncoder.encode(c, "UTF-8") + "\">" + c + "</a>");
+                sbuf.append(split).append("<a href=\"/tag/" + URLEncoder.encode(c, "UTF-8") + "\">" + c + "</a>");
             }
-            return sbuf.toString();
+            return split.length() > 0 ? sbuf.substring(split.length() - 1) : sbuf.toString();
         }
         return "";
+    }
+
+    /**
+     * 显示文章浏览量
+     * @return
+     */
+    public static String views(){
+        Contents contents = current_article();
+        return null != contents ? contents.getHits().toString() : "0";
     }
 
     /**
@@ -167,8 +217,7 @@ public final class Theme {
      * @return
      */
     public static String show_tags() throws UnsupportedEncodingException {
-        Contents contents = current_article();
-        return null != contents ? show_tags(contents.getTags()) : "";
+        return show_tags("");
     }
 
     /**
@@ -182,6 +231,16 @@ public final class Theme {
     }
 
     /**
+     * 获取文章摘要
+     * @param len
+     * @return
+     */
+    public static String excerpt(int len){
+        return intro(len);
+    }
+
+    /**
+     * 获取文章摘要
      * @param len
      * @return
      */
@@ -245,7 +304,26 @@ public final class Theme {
         int cid = contents.getCid();
         int size = cid % 20;
         size = size == 0 ? 1 : size;
-        return "/static/user/img/rand/" + size + ".jpg";
+        return "/templates/themes/default/static/img/rand/" + size + ".jpg";
+    }
+
+    /**
+     * 获取当前文章的上一篇
+     * @return
+     */
+    public static Contents article_next(){
+        Contents cur = current_article();
+        return null != cur ? siteService.getNhContent(Types.NEXT, cur.getCid()) : null;
+    }
+
+    /**
+     * 获取当前文章的下一篇
+     *
+     * @return
+     */
+    public static Contents article_prev(){
+        Contents cur = current_article();
+        return null != cur ? siteService.getNhContent(Types.PREV, cur.getCid()) : null;
     }
 
     /**
@@ -400,8 +478,64 @@ public final class Theme {
      * @return
      */
     public static String title() {
+        return title(current_article());
+    }
+
+    /**
+     * 返回文章标题
+     * @param contents
+     * @return
+     */
+    public static String title(Contents contents) {
+        return null != contents ? contents.getTitle() : Commons.site_title();
+    }
+
+    /**
+     * 返回所有友链
+     * @return
+     */
+    public static List<MetaDto> links(){
+        List<MetaDto> links = siteService.getMetas(Types.RECENT_META, Types.LINK, TaleConst.MAX_POSTS);
+        return links;
+    }
+
+    /**
+     * 返回社交账号链接
+     * @param socialtype
+     * @return
+     */
+    public static String social_link(String socialtype) {
+        String id = Commons.site_option("social_" + socialtype);
+        switch (socialtype){
+            case "github":
+                return "https://github.com/" + id;
+            case "weibo":
+                return "http://weibo.com/" + id;
+            case "twitter":
+                return "https://twitter.com/" + id;
+            case "zhihu":
+                return "https://www.zhihu.com/people/" + id;
+        }
+        return "";
+    }
+
+    /**
+     * 获取当前文章/页面的评论
+     * @param limit
+     * @return
+     */
+    public static Paginator<Comment> comments(int limit){
         Contents contents = current_article();
-        return null != contents ? contents.getTitle() : "";
+        if(null == contents){
+            return new Paginator<>(0,limit);
+        }
+        InterpretContext ctx = InterpretContext.current();
+        Object value = ctx.getValueStack().getValue("cp");
+        int page = 1;
+        if (null != value) {
+            page = (int) value;
+        }
+        return siteService.getComments(contents.getCid(), page, limit);
     }
 
     /**
@@ -417,4 +551,20 @@ public final class Theme {
         }
         return null;
     }
+
+    /**
+     * 显示评论
+     *
+     * @param noComment 评论为0的时候显示的文本
+     * @param value     评论组装文本
+     * @return
+     */
+    public static String comments_num(String noComment, String value){
+        Contents contents = current_article();
+        if(null == contents){
+            return noComment;
+        }
+        return contents.getComments_num() > 0 ? String.format(value, contents.getComments_num()) : noComment;
+    }
+
 }
