@@ -51,7 +51,14 @@
                         <input name="file" type="file" multiple="multiple">
                     </div>
                     <div class="dz-message">
+<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
                         将文件拖至此处或点击上传.
+=======
+                        <p>将文件拖至此处或点击上传.${attach_url}</p>
+                        <p>
+                            <span style="font-size: 16px; color: #d0d0d0;">一次最多可以上传10个文件</span>
+                        </p>
+>>>>>>> 🦄 fix plugin code
                     </div>
                 </form>
             </div>
@@ -116,10 +123,15 @@
         dictCancelUploadConfirmation:'确认取消？',
         dictRemoveFile:'删除文件',
         maxFiles: $.constant().MAX_FILES,//最大文件数量
+<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
         maxFilesize: $.constant().MAX_FILE_SIZE ,//MB
 //        acceptedFiles: ".js,.obj,.dae" //限制文件类型  image/*,application/pdf,.psd,.obj
+=======
+        maxFilesize: '${max_file_size}', //MB
+>>>>>>> 🦄 fix plugin code
         fallback:function(){
         },
+<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
         dictFileTooBig:'您的文件超过'+ $.constant().MAX_FILE_SIZE+'MB!',
         dictInvalidInputType:'不支持您上传的类型',
         dictMaxFilesExceeded:'您的文件超过'+ $.constant().MAX_FILES+'个!',
@@ -133,6 +145,26 @@
                 tale.alertOkAndReload('上传完成');
             });
         },
+=======
+        uploadMultiple: true,
+        dictFileTooBig:'您的文件超过'+ ${max_file_size} +'MB!',
+        dictInvalidInputType:'不支持您上传的类型',
+        dictMaxFilesExceeded:'您的文件超过'+ $.constant().MAX_FILES+'个!',
+        init: function() {
+            this.on('queuecomplete', function (files) {
+                tale.alertOkAndReload('上传成功');
+            });
+            this.on('error', function (a, errorMessage, result) {
+                if(!result.success && result.msg){
+                    tale.alertError(result.msg || '上传失败');
+                }
+            });
+            this.on('maxfilesreached', function () {
+                this.removeAllFiles(true);
+                tale.alertWarn('文件数量超出限制');
+            });
+        }
+>>>>>>> 🦄 fix plugin code
     });
 
 

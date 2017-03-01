@@ -90,6 +90,15 @@
                     <li #if(active=='setting') class="active" #end>
                         <a href="/admin/setting" class="waves-effect #if(active=='setting') active #end"><i class="fa fa-gear" aria-hidden="true"></i><span> 系统设置 </span></a>
                     </li>
+<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
+=======
+
+                    #for(item : plugin_menus)
+                    <li #if(active==item.slug) class="active" #end>
+                        <a href="/admin/plugins/${item.slug}" class="waves-effect #if(active==item.slug) active #end"><i class="${item.icon ?! 'fa fa-gear'}" aria-hidden="true"></i><span> ${item.name} </span></a>
+                    </li>
+                    #end
+>>>>>>> 🦄 fix plugin code
                 </ul>
                 <div class="clearfix"></div>
             </div>
