@@ -4,36 +4,30 @@
     #dropzone {
         margin-bottom: 3rem;
     }
-
     .dropzone {
         border: 2px dashed #0087F7;
         border-radius: 5px;
         background: white;
     }
-
     .dropzone .dz-message {
         font-weight: 400;
     }
-
     .dropzone .dz-message .note {
         font-size: 0.8em;
         font-weight: 200;
         display: block;
         margin-top: 1.4rem;
     }
-
     .attach-img {
         width: 100px;
         height: 100px;
         border-radius: 10px;
         box-shadow: 0px 0px 8px #333;
     }
-
     .attach-text {
         font-size: 12px;
         font-weight: 300;
     }
-
     .attach-img:hover {
         background-color: #f9f9f9;
     }
@@ -51,14 +45,10 @@
                         <input name="file" type="file" multiple="multiple">
                     </div>
                     <div class="dz-message">
-<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
-                        将文件拖至此处或点击上传.
-=======
                         <p>将文件拖至此处或点击上传.${attach_url}</p>
                         <p>
                             <span style="font-size: 16px; color: #d0d0d0;">一次最多可以上传10个文件</span>
                         </p>
->>>>>>> 🦄 fix plugin code
                     </div>
                 </form>
             </div>
@@ -77,9 +67,9 @@
 
         #for(attach : attachs.list)
         <div class="col-md-2 text-center m-t-10">
-            <a href="${site_url(attach.fkey)}" target="_blank">
+            <a href="${attach_url}${attach.fkey}" target="_blank">
                 <img class="attach-img"
-                     src="#if(attach.ftype == 'image') ${attach.fkey} #else /static/admin/images/attach.png #end"
+                     src="#if(attach.ftype == 'image') ${attach_url}${attach.fkey} #else /static/admin/images/attach.png #end"
                      title="${attach.fname}"/>
             </a>
             <div class="clearfix m-t-10">
@@ -87,7 +77,7 @@
                       data-original-title="${attach.fname}">${substr(attach.fname, 12)}</span>
             </div>
             <div class="clearfix">
-                <button url="${site_url(attach.fkey)}" type="button"
+                <button url="${attach_url}${attach.fkey}" type="button"
                         class="btn btn-warning btn-sm waves-effect waves-light m-t-5 copy">
                     <i class="fa fa-copy"></i> <span>复制</span>
                 </button>
@@ -98,9 +88,7 @@
             </div>
         </div>
         #end
-
         #call pageAdminNav(attachs)
-
         #end
     </div>
 </div>
@@ -117,35 +105,11 @@
     $("#dropzone").dropzone({
         url: "/admin/attach/upload",
         filesizeBase:1024,//定义字节算法 默认1000
-        addRemoveLinks: true,
-        uploadMultiple: true,
-        dictCancelUpload:'取消上传',
-        dictCancelUploadConfirmation:'确认取消？',
-        dictRemoveFile:'删除文件',
         maxFiles: $.constant().MAX_FILES,//最大文件数量
-<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
-        maxFilesize: $.constant().MAX_FILE_SIZE ,//MB
-//        acceptedFiles: ".js,.obj,.dae" //限制文件类型  image/*,application/pdf,.psd,.obj
-=======
         maxFilesize: '${max_file_size}', //MB
->>>>>>> 🦄 fix plugin code
         fallback:function(){
+            tale.alertError('暂不支持您的浏览器上传!');
         },
-<<<<<<< 60abd17a13b4badda4bbb9894bb207c3afb281ba
-        dictFileTooBig:'您的文件超过'+ $.constant().MAX_FILE_SIZE+'MB!',
-        dictInvalidInputType:'不支持您上传的类型',
-        dictMaxFilesExceeded:'您的文件超过'+ $.constant().MAX_FILES+'个!',
-        init: function() {
-            this.on("success", function(file) {
-                tale.alertOk('上传成功');
-                //this.removeFile(file);
-                //console.log("File " + file.name + "uploaded");
-            });
-            this.on("queuecomplete", function(list) {
-                tale.alertOkAndReload('上传完成');
-            });
-        },
-=======
         uploadMultiple: true,
         dictFileTooBig:'您的文件超过'+ ${max_file_size} +'MB!',
         dictInvalidInputType:'不支持您上传的类型',
@@ -164,9 +128,7 @@
                 tale.alertWarn('文件数量超出限制');
             });
         }
->>>>>>> 🦄 fix plugin code
     });
-
 
     var clipboard = new Clipboard('button.copy', {
         text: function (trigger) {
